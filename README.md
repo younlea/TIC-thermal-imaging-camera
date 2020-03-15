@@ -1,10 +1,12 @@
 # TIC-thermal-imaging-camera
 
 SDK2.9
+
 Linux
 
+
 Install required packages
-Debian-based Systems
+
 sudo apt-get update               (ensures that apt-get pulls the latest packages)
 
 sudo apt-get install libusb-1.0   (installs libusb drivers)
