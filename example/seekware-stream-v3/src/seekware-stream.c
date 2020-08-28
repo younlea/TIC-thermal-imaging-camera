@@ -77,6 +77,8 @@ SOFTWARE.
  #include <netinet/in.h>                                                                                      
  #define PORT 8080   
 
+int check_flag = 0;
+
 typedef enum display_mode_t {
     DISPLAY_ARGB  = 0,
     DISPLAY_THERMAL = 1,
@@ -307,6 +309,8 @@ int main(int argc, char ** argv) {
 	printf("SDK Version: %u.%u\n\n", sdk_info.sdk_version_major, sdk_info.sdk_version_minor);
 
 //////////////tcp/ip
+    system("killall vlc");
+
     int server_fd, new_socket, valread;                                                                      
     struct sockaddr_in address;                                                                              
     int opt = 1;                                                                                              
@@ -489,7 +493,9 @@ int main(int argc, char ** argv) {
     ret_code = ioctl(fdwr, VIDIOC_S_FMT, &vid_format);
     assert(ret_code != -1); 
 
-
+////////////////// start streaming
+//system("./streaming.sh & ");
+//system(raspivid -o - -t 0 -w 640 -h 360 -fps 25 | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http, mux=ts, dst=:8090}' :demux=h264 &);
 #endif
 /* * * * * * * * * * * * * Imaging Loop * * * * * * * * * * * * * * */
 
@@ -621,6 +627,11 @@ int main(int argc, char ** argv) {
             }
         }
 
+        if(check_flag == 0)
+        {
+            check_flag = 1;
+            system("./streaming.sh & ");
+        }
 	} while (!exit_requested);
 
 /* * * * * * * * * * * * * Cleanup * * * * * * * * * * * * * * */
