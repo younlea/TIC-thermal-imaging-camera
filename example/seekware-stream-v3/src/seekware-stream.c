@@ -310,6 +310,7 @@ int main(int argc, char ** argv) {
 
 //////////////tcp/ip
     system("killall vlc");
+    system("killall raspivid");
 
     int server_fd, new_socket, valread;                                                                      
     struct sockaddr_in address;                                                                              
