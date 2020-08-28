@@ -72,6 +72,11 @@ SOFTWARE.
 #define SCALE_FACTOR       2
 #define DRAW_RETICLE       true
 
+//tcp/ip
+ #include <sys/socket.h>                                                                                      
+ #include <netinet/in.h>                                                                                      
+ #define PORT 8080   
+
 typedef enum display_mode_t {
     DISPLAY_ARGB  = 0,
     DISPLAY_THERMAL = 1,
@@ -301,6 +306,55 @@ int main(int argc, char ** argv) {
 	Seekware_GetSdkInfo(NULL, &sdk_info);
 	printf("SDK Version: %u.%u\n\n", sdk_info.sdk_version_major, sdk_info.sdk_version_minor);
 
+//////////////tcp/ip
+    int server_fd, new_socket, valread;                                                                      
+    struct sockaddr_in address;                                                                              
+    int opt = 1;                                                                                              
+    int addrlen = sizeof(address);                                                                            
+    char buffer[1024] = {0}; 
+    
+    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0 )                                                  
+    {                                                                                                        
+        perror("socket failed");                                                                              
+        exit(EXIT_FAILURE);                                                                                  
+
+    }                                                                                                        
+
+    if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, & opt, sizeof(opt)))                    
+    {                                                                                                        
+        perror("setsockopt");                                                                                
+        exit(EXIT_FAILURE);                                                                                  
+
+    }                                                                                                        
+
+    address.sin_family = AF_INET;                                                                            
+    address.sin_addr.s_addr = INADDR_ANY;                                                                    
+    address.sin_port = htons(PORT);                                                                          
+
+    if(bind(server_fd, (struct sockaddr *)&address, sizeof(address))<0)                                      
+    {                                                                                                        
+        perror("bind failed");                                                                                
+        exit(EXIT_FAILURE);                                                                                  
+
+    }                                                                                                        
+    if(listen(server_fd, 3)< 0)                                                                              
+    {                                                                                                        
+        perror("listen");                                                                                    
+        exit(EXIT_FAILURE);                                                                                  
+
+    }                                                                                                        
+    if((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)                
+    {                                                                                                        
+        printf("server accept failed....\n");                                                                
+        exit(0);                                                                                              
+
+    }
+
+    int flag = fcntl(new_socket, F_GETFL, 0);
+    fcntl(new_socket, F_SETFL, flag | O_NONBLOCK);                                                            
+
+    int read_size = 0;             
+////////////end tcp/ip
 /* * * * * * * * * * * * * Find Seek Cameras * * * * * * * * * * * * * * */
 
     int num_cameras_found = 0;
@@ -525,7 +579,7 @@ int main(int argc, char ** argv) {
         //On select cameras that do not support thermography, nan is returned for spot, min, and max
         if(!exit_requested){
             if (frame_count > 1) {
-				static const int num_lines = 4;
+				static const int num_lines = 6;
 				for (int i = 0; i < num_lines; i++) {
 					printf("\033[A");
 				}
@@ -540,7 +594,10 @@ int main(int argc, char ** argv) {
                 int max_y = max_point % camera->frame_cols;
                 printf("min : %.1fc max : %.1fc max_point %d (%d, %d)\n ",min_t, max_t, max_point, max_x, max_y);
                 //sulac send max temp and point 
-                
+                char max_temp[5]={0,};
+                sprintf(max_temp,"%.1fc",max_t);
+                write(new_socket, max_temp, strlen(max_temp));
+                printf("%s \n", max_temp);
             }
 			printf("\33[2K--------------------------\n\n");
             fflush(stdout);
