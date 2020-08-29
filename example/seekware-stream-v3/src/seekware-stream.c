@@ -631,7 +631,7 @@ int main(int argc, char ** argv) {
         if(check_flag == 0)
         {
             check_flag = 1;
-            system("./streaming.sh & ");
+            system("streaming.sh & ");
         }
 	} while (!exit_requested);
 
