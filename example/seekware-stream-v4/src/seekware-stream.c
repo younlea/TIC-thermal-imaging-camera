@@ -250,7 +250,7 @@ void simple_agc(uint16_t* u16_input, size_t elements_in, uint32_t* argb_output, 
         }
     }
     //sulac
-    printf("--min %d max %d \n",min, max);
+    printf("--min_p %d max_p %d \n",min, max);
     //Find relative intensity based on min/max. Assign output RGB channels to computed 8bit luminance.
     uint16_t delta = max-min;
     uint32_t luminance = 0;
@@ -573,7 +573,8 @@ int main(int argc, char ** argv) {
                 int max_point = simple_check_max_point(thermography_data, frame_pixels);
                 int max_x = max_point / camera->frame_cols;
                 int max_y = max_point % camera->frame_cols;
-                printf("min : %.1fc max : %.1fc max_point %d (%d, %d)\n ",min_t, max_t, max_point, max_x, max_y);
+                //printf("min : %.1fc max : %.1fc max_point %d (%d, %d)\n ",min_t, max_t, max_point, max_x, max_y);
+                printf(" ----------------->>max :[%f]  [%.1f] \n ", max_t, max_t);
                 //sulac send max temp and point to seekware-tcpip using sharedmemory.  
                 write_shm = (float *)shared_memory;
                 *write_shm = max_t;
