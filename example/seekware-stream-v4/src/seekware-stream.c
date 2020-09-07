@@ -49,7 +49,7 @@ SOFTWARE.
 #include <linux/videodev2.h>
 #include <assert.h>
 #define VIDEO_DEVICE "/dev/video4"
-#define FRAME_FORMAT V4L2_PIX_FMT_RGB32
+#define FRAME_FORMAT V4L2_PIX_FMT_ARGB32
 #endif
 
 #ifdef _WIN32
