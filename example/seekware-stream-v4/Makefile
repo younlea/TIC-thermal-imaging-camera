@@ -9,10 +9,16 @@ CPPFLAGS	+= $(CFLAGS)
 TARGET	= seekware-stream
 OBJECTS	= objs/seekware-stream.o
 
-all: $(TARGET)
+TARGET2	= seekware-tcpip
+OBJECTS2 = objs/seekware-tcpip.o
+
+all: $(TARGET) $(TARGET2)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) $(LDPATH) $(LDFLAGS)
+
+$(TARGET2): $(OBJECTS2)
+	$(CXX) -o $@ $(OBJECTS2) $(LDPATH) $(LDFLAGS)
 
 objs/%.o:	src/%.cpp
 	@if test ! -e objs; then \
@@ -27,5 +33,4 @@ objs/%.o:	src/%.c
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -rf core *~  $(TARGET) $(OBJECTS) $(LIB) $(LIBOBJ) src/*~ include/*~
-
+	@rm -rf core *~  $(TARGET) $(TARGET2) $(OBJECTS) $(LIB) $(LIBOBJ) src/*~ include/*~ 
