@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
         //send max temp to client using tcp/ip
         char max_temp[5]={0,};
-        sprintf(max_temp,"%.1fc",temper);
+        sprintf(max_temp,"%.1f",temper);
         write(new_socket, max_temp,strlen(max_temp));
         printf("%s \n", max_temp); 
 
