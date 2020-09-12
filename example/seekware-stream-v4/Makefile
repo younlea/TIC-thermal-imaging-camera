@@ -34,3 +34,7 @@ objs/%.o:	src/%.c
 
 clean:
 	@rm -rf core *~  $(TARGET) $(TARGET2) $(OBJECTS) $(LIB) $(LIBOBJ) src/*~ include/*~ 
+
+install:
+	@sudo cp seekware-* myMonitor.sh streaming.sh /usr/bin
+
