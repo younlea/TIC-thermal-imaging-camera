@@ -605,7 +605,7 @@ int main(int argc, char ** argv) {
         {
             check_flag = 1;
             system("streaming.sh & ");
-            system("myMonitor.sh &");
+            //system("myMonitor.sh &");
             //system("seekware-tcpip &");
         }
 	} while (!exit_requested);
