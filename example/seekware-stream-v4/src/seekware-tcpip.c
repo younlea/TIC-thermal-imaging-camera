@@ -13,6 +13,7 @@
 #include <fcntl.h>   
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include "seekware-sharedMemory.h"
 
 #define PORT 8080                       
 
@@ -22,22 +23,31 @@ int main(int argc, char **argv)
     // shared memory setting 
     int shmid;
     int skey = 5678;
-    float *shared_memory;
+    sSharedMemory *shared_memory;
 
-    shmid = shmget((key_t)skey, sizeof(float), 0666);
+    shmid = shmget((key_t)skey, sizeof(int), 0666);
     if(shmid == -1)
     {
         perror("shmget failed\n");
         exit(0);
     }
 
-    shared_memory = (float *)shmat(shmid, (void *)0, 0);
+    shared_memory = (sSharedMemory *)shmat(shmid, (void *)0, 0);
     if(!shared_memory)
     {
         perror("shmat failed : ");
         exit(0);
     }
     printf("shm id : %d\n", shmid);
+
+    //test print shared memory data
+    /*
+        sSharedMemory temper = *shared_memory;
+        printf("key[%d] : read shm data ---------\n", skey);
+        printf("max temp[%0.1f], x,y= (%d, %d)\n", temper.max_t, temper.max_p.x, temper.max_p.y);
+        printf("min temp[%0.1f], x,y= (%d, %d)\n", temper.min_t, temper.min_p.x, temper.min_p.y);
+        printf("mode : %d \n", temper.mode_set);
+    */
 
     // tcp/ip socket setting 
     int server_fd, new_socket, valread; 
@@ -81,15 +91,25 @@ int main(int argc, char **argv)
     while(1)
     {   
         //read temper using shared memory. 
-        float temper = *shared_memory;
-        printf("key[%d] : read shm data : %f\n", skey, temper);
+        sSharedMemory temper = *shared_memory;
+        printf("key[%d] : read shm data ---------\n", skey);
+        printf("max temp[%0.1f], x,y= (%d, %d)\n", temper.max_t, temper.max_p.x, temper.max_p.y);
+        printf("min temp[%0.1f], x,y= (%d, %d)\n", temper.min_t, temper.min_p.x, temper.min_p.y);
+        printf("mode : %d \n", temper.mode_set);
 
         //send max temp to client using tcp/ip
-        char max_temp[5]={0,};
-        sprintf(max_temp,"%.1f",temper);
-        write(new_socket, max_temp,strlen(max_temp));
-        printf("%s \n", max_temp); 
+        char send_data[1024]={0,};
+        sprintf(send_data,"start,%.1f,%d,%d,%0.1f,%d,%d,end", temper.max_t, temper.max_p.x, temper.max_p.y, temper.min_t, temper.min_p.x, temper.min_p.y);
+        write(new_socket, send_data, strlen(send_data));
+        printf("%s \n", send_data); 
 
+        //recv data for change of thermal camera mode 
+/*
+        char recv_data = 0;
+        read(new_socket, recv_data, sizeof(char));
+        temper.mode_set = recv_data - '0';
+        printf("mode set receved : %d", recv_data - '0');
+*/
         sleep(1);
     }
 }

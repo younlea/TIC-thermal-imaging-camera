@@ -75,6 +75,7 @@ SOFTWARE.
 //shard_memory
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include "seekware-sharedMemory.h"
 
 int check_flag = 0;
 
@@ -100,6 +101,8 @@ static display_lut_t lut_names[] = {
     { "glory",  SW_LUT_GLORY    },
     { "envy",   SW_LUT_ENVY     }
 };
+
+int thermal_mode = 0;
 
 bool exit_requested = false;
 display_mode_t display_mode = DISPLAY_ARGB;
@@ -227,6 +230,24 @@ int simple_check_max_point(uint16_t* u16_input, size_t elements_in)
     }
     return ret;
 }
+
+int simple_check_min_point(uint16_t* u16_input, size_t elements_in)
+{
+    int ret = 0;  //min count
+    size_t i = 0;
+    uint16_t min = u16_input[0];
+    uint16_t pixel_in = 0;
+
+    for (i = 0; i < elements_in; ++i){
+        pixel_in = u16_input[i];
+        if(pixel_in < min){
+            min = pixel_in;
+            ret = i;
+        }
+    }
+    return ret;
+}
+
 //Perform a simple min/max linear stretch to transform U16 grayscale image data to ARGB8888
 //For advanced AGC options that are highly customizable, please see the AGC settings listed in the Seekware User Guide.
 void simple_agc(uint16_t* u16_input, size_t elements_in, uint32_t* argb_output, size_t elements_out) {
@@ -314,8 +335,9 @@ int main(int argc, char ** argv) {
     int shmid;
     void *shared_memory = (void *)0;
     int skey = 5678;
-    float *write_shm;
-     
+    sSharedMemory *write_shm;
+    write_shm->mode_set = thermal_mode; 
+
     //make shared memory 
     shmid = shmget((key_t)skey, sizeof(int), 0666|IPC_CREAT);
     if(shmid == -1)
@@ -573,11 +595,27 @@ int main(int argc, char ** argv) {
                 int max_point = simple_check_max_point(thermography_data, frame_pixels);
                 int max_x = max_point / camera->frame_cols;
                 int max_y = max_point % camera->frame_cols;
+                int min_point = simple_check_min_point(thermography_data, frame_pixels);
+                int min_x = min_point / camera->frame_cols;
+                int min_y = min_point % camera->frame_cols;
                 //printf("min : %.1fc max : %.1fc max_point %d (%d, %d)\n ",min_t, max_t, max_point, max_x, max_y);
-                printf(" ----------------->>max :[%f]  [%.1f] \n ", max_t, max_t);
+                printf(" ----------------->>max :[%f]  [%.1f] (x,y) (%d, %d)\n ", max_t, max_t, max_x, max_y);
+                printf(" ----------------->>min :[%f]  [%.1f] (x,y) (%d, %d)\n ", min_t, min_t, min_x, min_y);
                 //sulac send max temp and point to seekware-tcpip using sharedmemory.  
-                write_shm = (float *)shared_memory;
-                *write_shm = max_t;
+                write_shm = (sSharedMemory *)shared_memory;
+                write_shm->max_t = max_t;
+                write_shm->max_p.x = max_x;
+                write_shm->max_p.y = max_y;
+                write_shm->min_t = min_t;
+                write_shm->min_p.x = min_x;
+                write_shm->min_p.y = min_y;
+
+                //check mode seting. 
+                if( thermal_mode != write_shm->mode_set  )
+                {
+                    thermal_mode =  write_shm->mode_set;
+
+                }
             }
 			printf("\33[2K--------------------------\n\n");
             fflush(stdout);
