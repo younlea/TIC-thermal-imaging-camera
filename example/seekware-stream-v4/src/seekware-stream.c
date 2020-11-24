@@ -392,8 +392,7 @@ int main(int argc, char ** argv) {
     print_fw_info(camera);
 
     // Set the default display lut value
-    current_lut = SW_LUT_TYRIAN_NEW;
-    
+    current_lut = SW_LUT_SPECTRA; //SW_LUT_TYRIAN_NEW;
     // Parse the command line to additional settings
     if (parse_cmdline(argc, argv) == 0) {
 		goto cleanup;
@@ -591,6 +590,8 @@ int main(int argc, char ** argv) {
 			printf("\33[2K\x1B[42m\x1B[37m spot:%*.1fC \x1B[0m\n", 3, spot);
             if(temp_cnt == TEMP_CNT_MAX)
             {
+    
+                
                 //sulac check and point  
                 int max_point = simple_check_max_point(thermography_data, frame_pixels);
                 int max_x = max_point / camera->frame_cols;
@@ -614,7 +615,33 @@ int main(int argc, char ** argv) {
                 if( thermal_mode != write_shm->mode_set  )
                 {
                     thermal_mode =  write_shm->mode_set;
-
+//sulac mode setting 
+//  124     SW_LUT_WHITE_NEW = 100, thermal_mode = 1
+//  126     SW_LUT_SPECTRA,    102, thermal_mode = 0
+//  128     SW_LUT_TYRIAN_NEW, 104, thermal_mode = 2
+//  129     SW_LUT_AMBER_NEW,  105, thermal_mode = 3
+//  130     SW_LUT_IRON_NEWi   106/ thermal_mode = 4
+//
+                    switch (thermal_mode){
+                        case 0 :
+                            current_lut = SW_LUT_SPECTRA;
+                            break;
+                        case 1:
+                            current_lut = SW_LUT_WHITE_NEW;
+                            break;
+                        case 2:
+                            current_lut = SW_LUT_TYRIAN_NEW;
+                            break;
+                        case 3:
+                            current_lut = SW_LUT_AMBER_NEW;
+                            break;
+                        case 4:
+                            current_lut = SW_LUT_IRON_NEW;
+                            break;
+                        default:
+                            current_lut = SW_LUT_SPECTRA;
+                    }
+                    Seekware_SetSettingEx(camera, SETTING_ACTIVE_LUT, &current_lut, sizeof(current_lut)); 
                 }
             }
 			printf("\33[2K--------------------------\n\n");

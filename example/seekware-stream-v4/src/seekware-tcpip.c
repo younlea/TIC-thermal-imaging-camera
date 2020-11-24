@@ -104,12 +104,11 @@ int main(int argc, char **argv)
         printf("%s \n", send_data); 
 
         //recv data for change of thermal camera mode 
-/*
-        char recv_data = 0;
-        read(new_socket, recv_data, sizeof(char));
+        char recv_data = '0';
+        read(new_socket, &recv_data, sizeof(char));
         temper.mode_set = recv_data - '0';
         printf("mode set receved : %d", recv_data - '0');
-*/
+
         sleep(1);
     }
 }
