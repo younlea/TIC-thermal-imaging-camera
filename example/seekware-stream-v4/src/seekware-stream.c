@@ -639,7 +639,8 @@ int main(int argc, char ** argv) {
                             current_lut = SW_LUT_IRON_NEW;
                             break;
                         default:
-                            current_lut = SW_LUT_SPECTRA;
+                            break;
+                            //current_lut = SW_LUT_SPECTRA;
                     }
                     Seekware_SetSettingEx(camera, SETTING_ACTIVE_LUT, &current_lut, sizeof(current_lut)); 
                 }
